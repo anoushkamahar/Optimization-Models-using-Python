@@ -1,0 +1,58 @@
+#define variables
+x11 = LpVariable("x11", 0, 1, cat = 'Binary')
+x12 = LpVariable("x12", 0, 1, cat = 'Binary')
+x13 = LpVariable("x13", 0, 1, cat = 'Binary')
+x14 = LpVariable("x14", 0, 1, cat = 'Binary')
+x15 = LpVariable("x15", 0, 1, cat = 'Binary')
+x21 = LpVariable("x21", 0, 1, cat = 'Binary')
+x22 = LpVariable("x22", 0, 1, cat = 'Binary')
+x23 = LpVariable("x23", 0, 1, cat = 'Binary')
+x24 = LpVariable("x24", 0, 1, cat = 'Binary')
+x25 = LpVariable("x25", 0, 1, cat = 'Binary')
+x31 = LpVariable("x31", 0, 1, cat = 'Binary')
+x32 = LpVariable("x32", 0, 1, cat = 'Binary')
+x33 = LpVariable("x33", 0, 1, cat = 'Binary')
+x34 = LpVariable("x34", 0, 1, cat = 'Binary')
+x35 = LpVariable("x35", 0, 1, cat = 'Binary')
+x41 = LpVariable("x41", 0, 1, cat = 'Binary')
+x42 = LpVariable("x42", 0, 1, cat = 'Binary')
+x43 = LpVariable("x43", 0, 1, cat = 'Binary')
+x44 = LpVariable("x44", 0, 1, cat = 'Binary')
+x45 = LpVariable("x45", 0, 1, cat = 'Binary')
+x51 = LpVariable("x51", 0, 1, cat = 'Binary')
+x52 = LpVariable("x52", 0, 1, cat = 'Binary')
+x53 = LpVariable("x53", 0, 1, cat = 'Binary')
+x54 = LpVariable("x54", 0, 1, cat = 'Binary')
+x55 = LpVariable("x55", 0, 1, cat = 'Binary')
+
+
+
+# Define Problem
+prob = LpProblem("Problem", LpMinimize)
+
+
+# Define Problem Constraints
+prob += x11+x12+x13+x14+x15 == 1
+prob += x21+x22+x23+x24+x25 == 1
+prob += x31+x32+x33+x34+x35 == 1
+prob += x41+x42+x43+x44+x45 == 1
+prob += x51+x52+x53+x54+x55 == 1
+prob += x11+x21+x31+x41+x51 == 1
+prob += x12+x22+x32+x42+x52 == 1
+prob += x13+x23+x33+x43+x53 == 1
+prob += x14+x24+x34+x44+x54 == 1
+prob += x15+x25+x35+x45+x55 == 1
+
+#Set Objective Function
+prob += (18.5*x11) + (20*x12) + (24*x13) + (7.5*x14) + (13*x15) + (15*x21) + (16.5*x22) + (20.5*x23) + (4*x24) + (9.5*x25) + (9*x31) + (10*x32) + (14.5*x33) + (22*x34) + (27.5*x35) + (5.5*x41) + (7*x42) + (11*x43) + (18.5*x44) + (24*x45) + (24*x51) + (25.5*x52) + (5.5*x53) + (13*x54) + (24.5*x55)
+
+#Solve
+status = prob.solve()
+print(f"status={LpStatus[status]}")
+
+# Print Results
+for variable in prob.variables():
+    print(f"{variable.name} = {variable.varValue}")
+print(f"")    
+print(f"Objective = {value(prob.objective)}")
+print(f"")
