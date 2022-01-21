@@ -1,0 +1,46 @@
+#define variables
+x1 = LpVariable("x1", 0, 1, cat = 'Binary')
+x2 = LpVariable("x2", 0, 1, cat = 'Binary')
+x3 = LpVariable("x3", 0, 1, cat = 'Binary')
+y1 = LpVariable("y1", 0, 1, cat = 'Binary')
+y2 = LpVariable("y2", 0, 1, cat = 'Binary')
+y3 = LpVariable("y3", 0, 1, cat = 'Binary')
+y4 = LpVariable("y4", 0, 1, cat = 'Binary')
+y5 = LpVariable("y5", 0, 1, cat = 'Binary')
+y6 = LpVariable("y6", 0, 1, cat = 'Binary')
+z1 = LpVariable("z1", 0, 1, cat = 'Binary')
+z2 = LpVariable("z2", 0, 1, cat = 'Binary')
+z3 = LpVariable("z3", 0, 1, cat = 'Binary')
+z4 = LpVariable("z4", 0, 1, cat = 'Binary')
+z5 = LpVariable("z5", 0, 1, cat = 'Binary')
+
+
+# Define Problem
+prob = LpProblem("Problem", LpMinimize)
+
+
+# Define Problem Constraints
+prob += x1+x2+x3== 1
+prob += y1+y2+y3+y4+y6==1
+prob += z1+z3+z5==1
+prob += x1== y1+y2
+prob += x2==y3+y4
+prob += x3==y5+y6
+prob += z1==y1+y3+z2
+prob += z5==y6+z4
+prob += z2+z3+z4==y2+y4+y5
+
+
+#Set Objective Function
+prob += 400*x1+950*x2+800*x3+1800*y1+900*y2+1100*y3+ 600*y4+600*y5+1200*y6+400*z1+900*z2+1300*z3+1000*z4+600*z5
+
+#Solve
+status = prob.solve()
+print(f"status={LpStatus[status]}")
+
+# Print Results
+for variable in prob.variables():
+    print(f"{variable.name} = {variable.varValue}")
+print(f"")    
+print(f"Objective = {value(prob.objective)}")
+print(f"")
