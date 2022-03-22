@@ -1,0 +1,227 @@
+###Regression Model
+import datetime
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+import matplotlib.pyplot as plt
+import pandas
+from sklearn.model_selection import train_test_split
+from sklearn import preprocessing
+import numpy as np
+
+dataframe=pandas.read_csv('C:/Users/anous/Desktop/Sem2/AI/winequality-white.csv', sep=";", header=0)
+dataset = dataframe.values
+print(dataset.shape)
+X=dataset[:,0:11]
+Y=dataset[:,11]
+
+print("X"==X.shape)
+print("Y"==Y.shape)
+
+X_MinMax=preprocessing.MinMaxScaler()
+YMinMax=preprocessing.MinMaxScaler()
+X=X_MinMax.fit_transform(X)
+X.mean(axis=0)
+
+X_train, X_test, Y_train, Y_test = train_test_split(X,Y, test_size=.2)
+
+
+start_time = datetime.datetime.now()
+
+model=Sequential()
+model.add(Dense(50, input_dim=11, activation = 'relu')) 
+model.add(Dense(25, activation = 'relu'))
+model.add(Dense(1))
+model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mean_absolute_error'])
+history = model.fit(X_train, Y_train, epochs=50, batch_size=50, validation_data=(X_test,Y_test))
+      
+
+# Visualize training metric history
+plt.figure()
+plt.plot(history.history['mean_absolute_error'], label='Training accuracy')
+plt.plot(history.history['val_mean_absolute_error'], label='Test accuracy')
+plt.title('Training / Test MAE values')
+plt.xlabel('Epoch')
+plt.ylabel('MAE')
+plt.legend(loc="upper left")
+plt.show()
+
+# Visualize training loss history
+plt.figure()
+plt.plot(history.history['loss'], label='Training loss')
+plt.plot(history.history['val_loss'], label='Test loss')
+plt.title('Training / Test loss values')
+plt.xlabel('Epoch')
+plt.ylabel('loss')
+plt.legend(loc="upper left")
+plt.show()
+
+
+score=model.evaluate(X_test, Y_test)
+print("Test Loss = ", score[0])
+print("Test Accuracy = ", score[1])
+stop_time = datetime.datetime.now()
+print ("Time required for training:",stop_time - start_time)
+
+##K-fold validation
+k = 4
+num_val_samples = len(X_train) // k
+num_epochs = 100
+all_scores = []
+for i in range(k):
+    print('processing fold #', i)
+    val_data = X_train[i * num_val_samples: (i + 1) * num_val_samples]
+    val_targets = Y_train[i * num_val_samples: (i + 1) * num_val_samples]
+
+    partial_train_data = np.concatenate([X_train[:i * num_val_samples],X_train[(i + 1) * num_val_samples:]],axis=0)
+    partial_train_targets = np.concatenate([Y_train[:i * num_val_samples],Y_train[(i + 1) * num_val_samples:]],axis=0) 
+    
+    model.fit(partial_train_data, partial_train_targets, epochs=num_epochs, batch_size=50, verbose=0)
+    
+    val_mse, val_mae = model.evaluate(val_data, val_targets, verbose=0) 
+    all_scores.append(val_mae)
+
+print(all_scores)
+
+# processing fold # 0
+#processing fold # 1
+#processing fold # 2
+#processing fold # 3
+# [0.5487242937088013, 0.5533027052879333, 0.5307760238647461, #0.5534703135490417]
+
+#As it can be seen, the MAE is not different from one another. This shows validity of the model and shows it is not overfitted. 
+
+
+###Classification Model
+import datetime
+import pandas as pd
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from tensorflow.keras.utils import to_categorical
+from sklearn import preprocessing
+import numpy as np
+from sklearn.metrics import confusion_matrix
+import itertools
+
+data = pd.read_csv("C:/Users/anous/Desktop/Sem2/AI/Assignments/winequality-white.csv",
+ delimiter=";", header=0, names = ['f_acidity', 'v_acidity', 'citric Acid', 'r_sugar', 'chlorides', 
+                                   'free_so2','total_so2', 'density', 'pH', 'sulphates','alcohol', 
+                                   'quality'])
+
+#Pretreat Data Section
+print('data shape =',data.shape)
+data = data.dropna()
+x_vars = ['f_acidity', 'v_acidity', 'citric Acid', 'r_sugar', 'chlorides', 'free_so2','total_so2',
+          'density', 'pH', 'sulphates', 'alcohol']
+y_vars = ['quality']
+
+#Pretreat Data Section
+
+X = data[x_vars]
+Y = data[y_vars]
+
+X_MinMax=preprocessing.MinMaxScaler()
+X=X_MinMax.fit_transform(X)
+X.mean(axis=0)
+X=X.astype('float32')
+
+
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size = .2)
+Y_train = to_categorical(Y_train,num_classes=10)    
+Y_test = to_categorical(Y_test,num_classes=10)
+
+#Define Model Section
+start_time = datetime.datetime.now()
+# create model
+model = Sequential()
+model.add(Dense(13, input_dim=11, activation = 'relu')) 
+model.add(Dense(13,activation = 'relu'))
+model.add(Dense(10, activation='softmax'))
+
+#Train Model Section
+
+model.compile(optimizer='adam',loss='categorical_crossentropy',metrics = ['mean_absolute_error','accuracy'])
+model.summary()
+history = model.fit(X_train, Y_train, epochs = 50, batch_size = 50, validation_data=(X_test, Y_test))
+
+#Show output Section
+score=model.evaluate(X_test, Y_test)
+print("Test Loss = ", score[0])
+print("Test Accuracy = ", score[1])
+
+stop_time = datetime.datetime.now()
+print ("Time required for training:",stop_time - start_time)
+
+##Confusion Matrix
+#output confusion matrix
+def plot_confusion_matrix(cm, classes,
+                          normalize=False,
+                          title='Confusion matrix',
+                          cmap=plt.cm.Blues):
+    """
+    This function prints and plots the confusion matrix.
+    Normalization can be applied by setting `normalize=True`.
+    """
+    plt.figure()
+    plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    plt.title(title)
+    plt.colorbar()
+    tick_marks = np.arange(len(classes))
+    plt.xticks(tick_marks, classes, rotation=45)
+    plt.yticks(tick_marks, classes)
+
+    if normalize:
+        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+
+    thresh = cm.max() / 2.
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        plt.text(j, i, cm[i, j],
+                 horizontalalignment="center",
+                 color="white" if cm[i, j] > thresh else "black")
+
+    plt.tight_layout()
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+
+# Predict the values from the validation dataset
+pred_label = model.predict(X_test)
+# Convert predictions classes to one hot vectors 
+pred_label_classes = np.argmax(pred_label,axis = 1) 
+# Convert validation observations to one hot vectors
+label_true = np.argmax(Y_test,axis = 1) 
+# compute the confusion matrix
+confusion_mtx = confusion_matrix(label_true, pred_label_classes) 
+print(confusion_mtx)
+# plot the confusion matrix
+plot_confusion_matrix(confusion_mtx, classes = range(10)) 
+
+# Visualize model history
+plt.figure()
+plt.plot(history.history['accuracy'], label='Training accuracy')
+plt.plot(history.history['val_accuracy'], label='Validation accuracy')
+#plt.title('PReLU training / validation accuracies')
+plt.ylabel('Accuracy')
+plt.xlabel('Epoch')
+plt.legend(loc="upper left")
+plt.show()
+
+plt.figure()
+plt.plot(history.history['loss'], label='Training loss')
+plt.plot(history.history['val_loss'], label='Validation loss')
+plt.title('PReLU training / validation loss values')
+plt.ylabel('Loss value')
+plt.xlabel('Epoch')
+plt.legend(loc="upper left")
+plt.show()
+#The matrix shows that the model did an adequate job at predicting the quality of white wine. 
+
+#####Conclusion
+#The white wine MAE and MSE regression network is as below:
+#MAE: 0.58
+#MSE: 0.57
+#The white wine MAE and MSE classification network is as below:
+#MAE:  0.12
+#MSE: 1.1
+#Judging by this data and only looking at MAE, classification neural network is better for white wine dataset. 
+
